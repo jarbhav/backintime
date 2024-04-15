@@ -1821,21 +1821,6 @@ def splitCommands(cmds, head = '', tail = '', maxLength = 0):
         s += tail
         yield s
 
-def isIPv6Address(address):
-    """
-    Check if ``address`` is a valid IPv6 address.
-
-    Args:
-        address (str):  address that should get tested
-
-    Returns:
-        bool:           True if ``address`` is a valid IPv6 address
-    """
-    try:
-        return isinstance(ipaddress.IPv6Address(address), ipaddress.IPv6Address)
-    except:
-        return False
-
 def escapeIPv6Address(address):
     """
     Escape IPv6 Addresses with square brackets ``[]``.
@@ -1846,10 +1831,13 @@ def escapeIPv6Address(address):
     Returns:
         str:            ``address`` in square brackets
     """
-    if isIPv6Address(address):
-        return '[{}]'.format(address)
-    else:
-        return address
+    try:
+        ip = ipaddress.ip_address(address)
+        if ip.version == 6:
+            return '[{}]'.format(address)
+    except ValueError:
+        pass    # Address is not a valid IP address, so return it unchanged
+    return address
 
 def camelCase(s):
     """

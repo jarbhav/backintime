@@ -732,13 +732,6 @@ class TestTools(generic.TestCase):
             ret[0],
             'echo start;echo foo;echo foo;echo foo;echo end')
 
-    def test_isIPv6Address(self):
-        self.assertTrue(tools.isIPv6Address('fd00:0::5'))
-        self.assertTrue(tools.isIPv6Address('2001:db8:0:8d3:0:8a2e:70:7344'))
-        self.assertFalse(tools.isIPv6Address('foo.bar'))
-        self.assertFalse(tools.isIPv6Address('192.168.1.1'))
-        self.assertFalse(tools.isIPv6Address('fd00'))
-
     def test_excapeIPv6Address(self):
         self.assertEqual(tools.escapeIPv6Address('fd00:0::5'), '[fd00:0::5]')
         self.assertEqual(
