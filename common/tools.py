@@ -1822,21 +1822,22 @@ def splitCommands(cmds, head = '', tail = '', maxLength = 0):
         yield s
 
 def escapeIPv6Address(address):
-    """
-    Escape IPv6 Addresses with square brackets ``[]``.
+    """Escape IP addresses with square brackets ``[]`` if they are IPv6.
+
+    If IPv4 nothing is changed.
 
     Args:
-        address (str):  address that should be escaped
+        address (str): IP-Address to escape if needed.
 
     Returns:
-        str:            ``address`` in square brackets
+        str: The address, escaped if it is IPv6.
+
+    Raises:
+        ValueError: If address is not a valid IPv4 or IPv6.
     """
-    try:
-        ip = ipaddress.ip_address(address)
-        if ip.version == 6:
-            return '[{}]'.format(address)
-    except ValueError:
-        pass    # Address is not a valid IP address, so return it unchanged
+    ip = ipaddress.ip_address(address)
+    if ip.version == 6:
+        return '[{}]'.format(address)
     return address
 
 def camelCase(s):

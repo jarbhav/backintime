@@ -732,14 +732,40 @@ class TestTools(generic.TestCase):
             ret[0],
             'echo start;echo foo;echo foo;echo foo;echo end')
 
-    def test_excapeIPv6Address(self):
+    def test_escapeIPv6Address_escaped(self):
         self.assertEqual(tools.escapeIPv6Address('fd00:0::5'), '[fd00:0::5]')
         self.assertEqual(
             tools.escapeIPv6Address('2001:db8:0:8d3:0:8a2e:70:7344'),
             '[2001:db8:0:8d3:0:8a2e:70:7344]')
-        self.assertEqual(tools.escapeIPv6Address('foo.bar'), 'foo.bar')
+        self.assertEqual(tools.escapeIPv6Address('::'), '[::]')
+        self.assertEqual(tools.escapeIPv6Address('::1'), '[::1]')
+        self.assertEqual(tools.escapeIPv6Address('::ffff:192.0.2.128'), '[::ffff:192.0.2.128]')
+        self.assertEqual(tools.escapeIPv6Address('fe80::1'), '[fe80::1]')
+
+    def test_escapeIPv6Address_passed(self):
         self.assertEqual(tools.escapeIPv6Address('192.168.1.1'), '192.168.1.1')
-        self.assertEqual(tools.escapeIPv6Address('fd00'), 'fd00')
+        self.assertEqual(tools.escapeIPv6Address('172.17.1.133'), '172.17.1.133')
+        self.assertEqual(tools.escapeIPv6Address('255.255.255.255'), '255.255.255.255')
+        self.assertEqual(tools.escapeIPv6Address('169.254.0.1'), '169.254.0.1')
+
+    def test_escapeIPv6Address_valueError(self):
+        with self.assertRaises(ValueError):
+            tools.escapeIPv6Address('foo.bar')
+
+        with self.assertRaises(ValueError):
+            tools.escapeIPv6Address('fd00')
+        
+        with self.assertRaises(ValueError):
+            tools.escapeIPv6Address('2001:0db8:::0000:0000:8a2e:0370:7334')
+
+        with self.assertRaises(ValueError):
+            tools.escapeIPv6Address(':2001:0db8:85a3:0000:0000:8a2e:0370:7334')
+
+        with self.assertRaises(ValueError):
+            tools.escapeIPv6Address('2001:0gb8:85a3:0000:0000:8a2e:0370:7334')
+
+        with self.assertRaises(ValueError):
+            tools.escapeIPv6Address('2001:0db8:85a3:0000:0000:8a2e:0370:7334:abcd')
 
     def test_camelCase(self):
         self.assertEqual(tools.camelCase('foo'), 'Foo')
