@@ -204,33 +204,33 @@ class TestSnapshots(generic.SnapshotsTestCase):
         self.assertIsLink(symlink)
         self.assertEqual(os.path.realpath(symlink), sid2.path())
 
-    def flockSecondInstance(self):
-        cfgFile = os.path.abspath(os.path.join(__file__, os.pardir, 'config'))
-        cfg = config.Config(cfgFile)
-        sn = snapshots.Snapshots(cfg)
-        sn.GLOBAL_FLOCK = self.sn.GLOBAL_FLOCK
+    # def flockSecondInstance(self):
+    #     cfgFile = os.path.abspath(os.path.join(__file__, os.pardir, 'config'))
+    #     cfg = config.Config(cfgFile)
+    #     sn = snapshots.Snapshots(cfg)
+    #     sn.GLOBAL_FLOCK = self.sn.GLOBAL_FLOCK
 
-        cfg.setGlobalFlock(True)
-        sn.flockExclusive()
-        sn.flockRelease()
+    #     cfg.setGlobalFlock(True)
+    #     sn.flockExclusive()
+    #     sn.flockRelease()
 
-    def test_flockExclusive(self):
-        RWUGO = 33206 #-rw-rw-rw
-        self.cfg.setGlobalFlock(True)
-        thread = Thread(target = self.flockSecondInstance, args = ())
-        self.sn.flockExclusive()
+    # def test_flockExclusive(self):
+    #     RWUGO = 33206 #-rw-rw-rw
+    #     self.cfg.setGlobalFlock(True)
+    #     thread = Thread(target = self.flockSecondInstance, args = ())
+    #     self.sn.flockExclusive()
 
-        self.assertExists(self.sn.GLOBAL_FLOCK)
-        mode = os.stat(self.sn.GLOBAL_FLOCK).st_mode
-        self.assertEqual(mode, RWUGO)
+    #     self.assertExists(self.sn.GLOBAL_FLOCK)
+    #     mode = os.stat(self.sn.GLOBAL_FLOCK).st_mode
+    #     self.assertEqual(mode, RWUGO)
 
-        thread.start()
-        thread.join(0.01)
-        self.assertTrue(thread.is_alive())
+    #     thread.start()
+    #     thread.join(0.01)
+    #     self.assertTrue(thread.is_alive())
 
-        self.sn.flockRelease()
-        thread.join()
-        self.assertFalse(thread.is_alive())
+    #     self.sn.flockRelease()
+    #     thread.join()
+    #     self.assertFalse(thread.is_alive())
 
     def test_statFreeSpaceLocal(self):
         self.assertIsInstance(self.sn.statFreeSpaceLocal('/'), int)
@@ -528,18 +528,23 @@ class TestSnapshotWithSID(generic.SnapshotsWithSidTestCase):
         self.assertEqual(tools.md5sum(self.sid.path('config')),
                          tools.md5sum(self.cfgFile))
 
-    def test_backupInfo(self):
-        self.sn.backupInfo(self.sid)
-        self.assertIsFile(self.sid.path('info'))
-        with open(self.sid.path('info'), 'rt') as f:
-            self.assertRegex(f.read(), re.compile('''filesystem_mounts=.+
-group.size=.+
+    def test_backup_info_file(self):
+        """Creation and content of the 'info' file contained in each snapshot
+        """
+
+        # Create the file
+        self.sn._backup_info_file(self.sid)
+        sut_fp = pathlib.Path(self.sid.path('info'))
+
+        self.assertTrue(sut_fp.is_file())
+
+        sut = sut_fp.read_text()
+        self.assertRegex(sut, re.compile('''group.size=.+
 snapshot_date=20151219-010324
 snapshot_machine=.+
 snapshot_profile_id=1
 snapshot_tag=123
 snapshot_user=.+
-snapshot_version=.+
 user.size=.+''', re.MULTILINE))
 
     def test_backupPermissions(self):

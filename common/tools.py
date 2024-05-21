@@ -89,6 +89,7 @@ DISK_BY_UUID = '/dev/disk/by-uuid'
 # | Handling paths  |
 # |-----------------|
 
+
 def sharePath():
     """Get path where Back In Time is installed.
 
@@ -110,6 +111,7 @@ def sharePath():
         return share
 
     return '/usr/share'
+
 
 def backintimePath(*path):
     """
@@ -349,17 +351,24 @@ def registerBackintimePath(*path):
         would need this to actually import :py:mod:`tools`.
     """
     path = backintimePath(*path)
-    if not path in sys.path:
+
+    if path not in sys.path:
         sys.path.insert(0, path)
 
+
 def runningFromSource():
-    """
-    Check if BackInTime is running from source (without installing).
+    """Check if BackInTime is running from source (without installing).
+
+    Dev notes by buhtz (2024-04): This function is dangerous and will give a
+    false-negative in fake filesystems (e.g. PyFakeFS). The function should
+    not exist. Beside unit tests it is used only two times. Remove it until
+    migration to pyproject.toml based project packaging (#1575).
 
     Returns:
-        bool:   ``True`` if BackInTime is running from source
+        bool: ``True`` if BackInTime is running from source.
     """
     return os.path.isfile(backintimePath('common', 'backintime'))
+
 
 def addSourceToPathEnviron():
     """
@@ -368,7 +377,8 @@ def addSourceToPathEnviron():
     source = backintimePath('common')
     path = os.getenv('PATH')
     if path and source not in path.split(':'):
-        os.environ['PATH'] = '%s:%s' %(source, path)
+        os.environ['PATH'] = '%s:%s' % (source, path)
+
 
 def get_git_repository_info(path=None, hash_length=None):
     """Return the current branch and last commit hash.
@@ -456,6 +466,7 @@ def readFile(path, default=None):
 
     return ret_val
 
+
 def readFileLines(path, default = None):
     """
     Read the file in ``path`` or its '.gz' compressed variant and return its
@@ -484,15 +495,15 @@ def readFileLines(path, default = None):
 
     return ret_val
 
+
 def checkCommand(cmd):
-    """
-    Check if command ``cmd`` is a file in 'PATH' environ.
+    """Check if command ``cmd`` is a file in 'PATH' environment.
 
     Args:
-        cmd (str):  command
+        cmd (str): The command.
 
     Returns:
-        bool:       ``True`` if command ``cmd`` is in 'PATH' environ
+        bool: ``True`` if ``cmd`` is in 'PATH' environment otherwise ``False``.
     """
     cmd = cmd.strip()
 
@@ -501,30 +512,41 @@ def checkCommand(cmd):
 
     if os.path.isfile(cmd):
         return True
-    return not which(cmd) is None
 
+    return which(cmd) is not None
+
+  
 def which(cmd):
-    """
-    Get the fullpath of executable command ``cmd``. Works like
-    command-line 'which' command.
+    """Get the fullpath of executable command ``cmd``.
+
+    Works like command-line 'which' command.
+
+    Dev note by buhtz (2024-04): Give false-negative results in fake
+    filesystems. Quit often use in the whole code base. But not sure why
+    can we replace it with "which" from shell?
 
     Args:
-        cmd (str):  command
+        cmd (str): The command.
 
     Returns:
-        str:        fullpath of command ``cmd`` or ``None`` if command is
-                    not available
+        str: Fullpath of command ``cmd`` or ``None`` if command is not
+             available.
     """
     pathenv = os.getenv('PATH', '')
-    path = pathenv.split(":")
+    path = pathenv.split(':')
     common = backintimePath('common')
+
     if runningFromSource() and common not in path:
         path.insert(0, common)
+
     for directory in path:
         fullpath = os.path.join(directory, cmd)
+
         if os.path.isfile(fullpath) and os.access(fullpath, os.X_OK):
             return fullpath
+
     return None
+
 
 def makeDirs(path):
     """
@@ -542,15 +564,19 @@ def makeDirs(path):
 
     if os.path.isdir(path):
         return True
+
     else:
+
         try:
             os.makedirs(path)
         except Exception as e:
             logger.error("Failed to make dirs '%s': %s"
-                         %(path, str(e)), traceDepth = 1)
+                         % (path, str(e)), traceDepth=1)
+
     return os.path.isdir(path)
 
-def mkdir(path, mode = 0o755, enforce_permissions = True):
+
+def mkdir(path, mode=0o755, enforce_permissions=True):
     """
     Create directory ``path``.
 
@@ -567,14 +593,18 @@ def mkdir(path, mode = 0o755, enforce_permissions = True):
                 os.chmod(path, mode)
         except:
             return False
+
         return True
+
     else:
         os.mkdir(path, mode)
+
         if mode & 0o002 == 0o002:
-            #make file world (other) writable was requested
-            #debian and ubuntu won't set o+w with os.mkdir
-            #this will fix it
+            # make file world (other) writable was requested
+            # debian and ubuntu won't set o+w with os.mkdir
+            # this will fix it
             os.chmod(path, mode)
+
     return os.path.isdir(path)
 
 
@@ -1105,6 +1135,7 @@ def checkCronPattern(s):
     except ValueError:
         return False
 
+
 #TODO: check if this is still necessary
 def checkHomeEncrypt():
     """
@@ -1131,6 +1162,7 @@ def checkHomeEncrypt():
                 return True
     return False
 
+
 def envLoad(f):
     """
     Load environ variables from file ``f`` into current environ.
@@ -1150,6 +1182,7 @@ def envLoad(f):
             os.environ[key] = value
     del(env_file)
 
+
 def envSave(f):
     """
     Save environ variables to file that are needed by cron
@@ -1168,6 +1201,7 @@ def envSave(f):
             env_file.setStrValue(key, env[key])
 
     env_file.save(f)
+
 
 def keyringSupported():
     """
@@ -1275,11 +1309,13 @@ def password(*args):
         return keyring.get_password(*args)
     return None
 
+
 def setPassword(*args):
 
     if is_keyring_available:
         return keyring.set_password(*args)
     return False
+
 
 def mountpoint(path):
     """
@@ -1293,11 +1329,15 @@ def mountpoint(path):
         str:        mountpoint of the filesystem
     """
     path = os.path.realpath(os.path.abspath(path))
+
     while path != os.path.sep:
         if os.path.ismount(path):
             return path
+
         path = os.path.abspath(os.path.join(path, os.pardir))
+
     return path
+
 
 def decodeOctalEscape(s):
     """
@@ -1313,6 +1353,7 @@ def decodeOctalEscape(s):
     def repl(m):
         return chr(int(m.group(1), 8))
     return re.sub(r'\\(\d{3})', repl, s)
+
 
 def mountArgs(path):
     """
@@ -1344,6 +1385,7 @@ def mountArgs(path):
 
     return None
 
+
 def device(path):
     """
     Get the device for the filesystem of ``path``.
@@ -1365,6 +1407,7 @@ def device(path):
         return args[0]
 
     return None
+
 
 def filesystem(path):
     """
@@ -1508,6 +1551,7 @@ def uuidFromDev(dev):
     # Try "udevadm" command at the end
     return _uuidFromDev_via_udevadm_command(dev)
 
+
 def uuidFromPath(path):
     """
     Get the UUID for the for the filesystem of ``path``.
@@ -1520,31 +1564,6 @@ def uuidFromPath(path):
     """
     return uuidFromDev(device(path))
 
-def filesystemMountInfo():
-    """
-    Get a dict of mount point string -> dict of filesystem info for
-    entire system.
-
-    Returns:
-        dict:   {MOUNTPOINT: {'original_uuid': UUID}}
-    """
-    # There may be multiple mount points inside of the root (/) mount, so
-    # iterate over mtab to find all non-special mounts.
-    with open('/etc/mtab', 'r') as mounts:
-        return {items[1]: {'original_uuid': uuidFromDev(items[0])} for items in
-                [mount_line.strip('\n').split(' ')[:2] for mount_line in mounts]
-                if uuidFromDev(items[0]) != None}
-
-
-def syncfs():
-    """
-    Sync any data buffered in memory to disk.
-
-    Returns:
-        bool:   ``True`` if successful
-    """
-    if checkCommand('sync'):
-        return(Execute(['sync']).run() == 0)
 
 def isRoot():
     """
@@ -1868,6 +1887,7 @@ def fdDup(old, new_fd, mode = 'w'):
     except OSError as e:
         logger.debug('Failed to redirect {}: {}'.format(old, str(e)))
 
+
 class UniquenessSet:
     """
     Check for uniqueness or equality of files.
@@ -1984,6 +2004,7 @@ class UniquenessSet:
         else:
             return self.reference == (st.st_size, int(st.st_mtime))
 
+
 class Alarm(object):
     """
     Establish a callback function that is called after a timeout.
@@ -2058,6 +2079,7 @@ class Alarm(object):
             raise Timeout()
         else:
             self.callback()
+
 
 class ShutDown(object):
     """
@@ -2216,17 +2238,19 @@ class ShutDown(object):
         """
         if not self.activate_shutdown:
             return(False)
+
         if self.is_root:
-            syncfs()
             self.started = True
             proc = subprocess.Popen(['shutdown', '-h', 'now'])
             proc.communicate()
             return proc.returncode
+
         if self.proxy is None:
             return(False)
+
         else:
-            syncfs()
             self.started = True
+
             return(self.proxy(*self.args))
 
     def unity7(self):
@@ -2243,6 +2267,7 @@ class ShutDown(object):
         m = re.match(r'unity ([\d\.]+)', unity_version)
 
         return m and Version(m.group(1)) >= Version('7.0') and processExists('unity-panel-service')
+
 
 class SetupUdev(object):
     """
@@ -2319,6 +2344,7 @@ class SetupUdev(object):
             return
         self.iface.clean()
 
+
 class PathHistory(object):
     def __init__(self, path):
         self.history = [path,]
@@ -2352,6 +2378,7 @@ class PathHistory(object):
     def reset(self, path):
         self.history = [path,]
         self.index = 0
+
 
 class OrderedSet(MutableSet):
     """
@@ -2413,6 +2440,7 @@ class OrderedSet(MutableSet):
         if isinstance(other, OrderedSet):
             return len(self) == len(other) and list(self) == list(other)
         return set(self) == set(other)
+
 
 class Execute(object):
     """
@@ -2618,6 +2646,7 @@ class Execute(object):
         if self.pausable and self.currentProc:
             logger.info('Kill process "%s"' %self.printable_cmd, self.parent, 2)
             return self.currentProc.kill()
+
 
 class Daemon:
     """

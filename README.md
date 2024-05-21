@@ -5,7 +5,8 @@
 
 # Back In Time
 <sub>Copyright (C) 2008-2024 Oprea Dan, Bart de Koning, Richard Bailey,
-Germar Reitze, Taylor Raack, Christian Buhtz, Michael Büker, Jürgen Altfeld<sub>
+Germar Reitze, Taylor Raack</sub><br />
+<sub>Copyright (C) 2022 Christian Buhtz, Michael Büker, Jürgen Altfeld</sub>
  
 _Back In Time_ is an easy-to-use tool to backup files and folders.
 It runs on GNU Linux (not on Windows or OS X/macOS) and provides a command line tool `backintime` and a
@@ -18,30 +19,40 @@ It was inspired by [FlyBack](https://en.wikipedia.org/wiki/FlyBack).
 
 ## Maintenance status
 
-A small team (Christian Buhtz, Michael Büker and Jürgen Altfeld)
-has started in summer 2022 to get things moving again after the
-development of this project has been dormant for a while.
-We do the development in our spare time and have to prioritize so
-stick with us, we all ♥️ _Back In Time_. 😁
+The project is in active development since the [new team](#the-team) joined in
+summer 2022. Development is done in spare time so things need to be
+prioritized. Stick with us, we all ♥️ _Back In Time_. 😁
 
-We are currently focusing on fixing
+Current focus is on fixing
 [major issues](https://github.com/bit-team/backintime/issues?q=is%3Aissue+is%3Aopen+label%3AHigh)
 instead of implementing new
-[features](https://github.com/bit-team/backintime/labels/Feature).
-If you are interested in the development, please
-see [CONTRIBUTING](CONTRIBUTING.md) and have a look on
+[features](https://github.com/bit-team/backintime/labels/Feature). Read the
+[strategy outline](CONTRIBUTING.md#strategy-outline) for details.
+Please see  [CONTRIBUTING](CONTRIBUTING.md) if you are interested in the
+development and have a look on
 [open issues](https://github.com/bit-team/backintime/issues) especially
-those labeled as [good first issue](https://github.com/bit-team/backintime/labels/GOOD%20FIRST%20ISSUE)
+those labeled as [good first issues](https://github.com/bit-team/backintime/labels/GOOD%20FIRST%20ISSUE)
 and [help wanted](https://github.com/bit-team/backintime/issues?q=is%3Aissue+is%3Aopen+label%3AHELP-WANTED).
 
-## Index
+## The team
+The current team started in summer of 2022 (with #1232) and constitutes the
+project's 3rd generation of maintainers. Consisting of three members with
+diverse backgrounds (@aryoda, @buhtz, @emtiu), the team benefits from the
+assistance of the former maintainer, @Germar, who contributes from behind the
+scenes.
+
+All team members are engaged in every aspect of the project, including code
+analysis, documentation, solving issues, and the implementation of new
+features. This work is carried out voluntarily during their limited spare time.
+
+# Index
 
 - [Documentation, FAQs, Support](#documentation-faqs-support)
 - [Installation](#installation)
 - [Known Problems and Workarounds](#known-problems-and-workarounds)
-- [CONTRIBUTING](CONTRIBUTING.md)
+- [Contributing and other ways to support the project](#contributing-and-other-ways-to-support-the-project)
 
-## Documentation, FAQs, Support
+# Documentation, FAQs, Support
 
  * [FAQ - Frequently Asked Questions](FAQ.md)
  * [End user documentation](https://backintime.readthedocs.org/) (not totally up-to-date)
@@ -53,14 +64,14 @@ and [help wanted](https://github.com/bit-team/backintime/issues?q=is%3Aissue+is%
    questions and report bugs.
  * [Source code documentation for developers](https://backintime-dev.readthedocs.org)
 
-## Installation
+# Installation
 
 _Back In Time_ is included in [many GNU/Linux distributions](https://repology.org/project/backintime/badges).
 Use their repositories to install it. If you want to contribute or using the latest development version
 of _Back In Time_ please see section [Build & Install](CONTRIBUTING.md#build--install) in [`CONTRIBUTING.md`](CONTRIBUTING.md).
 Also the dependencies are described there.
 
-### Alternative installation options
+## Alternative installation options
 Besides the repositories of the official GNU/Linux distributions, there are other alternative
 installation options provided and maintained by third parties.
 
@@ -68,11 +79,10 @@ installation options provided and maintained by third parties.
 - [@jean-christophe-manciot](https://github.com/jean-christophe-manciot)'s PPA distributing [_Back In Time_ for the latest stable Ubuntu release](https://git.sdxlive.com/PPA/about). See [PPA requirements](https://git.sdxlive.com/PPA/about/#requirements) and [install instructions](https://git.sdxlive.com/PPA/about/#installing-the-ppa).
 - The Arch User Repository ([AUR](https://aur.archlinux.org/)) does offer [some packages](https://aur.archlinux.org/packages?K=backintime).
 
-## Known Problems and Workarounds
+# Known Problems and Workarounds
 
 In the latest stable release:
 - [File permissions handling and therefore possible non-differential backups](#file-permissions-handling-and-therefore-possible-non-differential-backups)
-- [Warning: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead (see apt-key(8)).](#warning-apt-key-is-deprecated-manage-keyring-files-in-trustedgpgd-instead-see-apt-key8)
 - [`qt5_probing.py` may hang with high CPU usage when running BiT as `root` via `cron`](#qt5_probingpy-may-hang-with-high-cpu-usage-when-running-bit-as-root-via-cron)
 
 In older releases:
@@ -82,11 +92,14 @@ In older releases:
 - [Incompatibility with rsync >= 3.2.4](#incompatibility-with-rsync-324-or-newer)
 - [Python 3.10 compatibility and Ubuntu version](#python-310-compatibility-and-ubuntu-version)
 
-### Problems in the latest stable release
+More problems described in
+[this FAQ section](FAQ.md#problems-errors--solutions).
+
+## Problems in the latest stable release
 
 All releases can be found in the [list of releases](https://github.com/bit-team/backintime/releases).
 
-#### File permissions handling and therefore possible non-differential backups
+### File permissions handling and therefore possible non-differential backups
 
 In version 1.2.0, the handling of file permissions changed.
 In versions <= 1.1.24 (until 2017) all file permissions were set to `-rw-r--r--` in the backup target.
@@ -100,20 +113,7 @@ to add `--no-perms --no-group --no-owner` to it.
 Note that the exact file permissions can still be found in `fileinfo.bz2` and are also considered when restoring
 files.
 
-#### Warning: apt-key is deprecated. Manage keyring files in trusted.gpg.d instead (see apt-key(8)).
-
-In newer Ubuntu-based distros you may get this warning if you manually install _Back In Time_
-as described in the [Installation](#installation) section here.
-
-The reason is that public keys of signed packages shall be stored in a new folder now
-(for details see https://itsfoss.com/apt-key-deprecated/).
-
-You can currently ignore this warning until we have found a reliable way
-to support all Ubuntu distros (older and newer ones).
-
-This issue is tracked in [#1338](https://github.com/bit-team/backintime/issues/1338).
-
-#### `qt5_probing.py` may hang with high CPU usage when running BiT as `root` via `cron`
+### `qt5_probing.py` may hang with high CPU usage when running BiT as `root` via `cron`
 
 See the related issue [#1592](https://github.com/bit-team/backintime/issues/1592).
 
@@ -124,9 +124,9 @@ the file `/usr/share/backintime/common/qt5_probing.py`:
 
 Renaming does *not* work!
 
-### Problems in versions older than the latest stable release
+## Problems in versions older than the latest stable release
 
-#### Tray icon or other icons not shown correctly
+### Tray icon or other icons not shown correctly
 
 **Status: Fixed in v1.4.0**
 
@@ -141,7 +141,7 @@ your package manager.
 See issues [#1306](https://github.com/bit-team/backintime/issues/1306)
 and [#1364](https://github.com/bit-team/backintime/issues/1364).
 
-#### Non-working password safe and BiT forgets passwords (keyring backend issues)
+### Non-working password safe and BiT forgets passwords (keyring backend issues)
 
 **Status: Fixed in v1.3.3 (mostly) and v1.4.0**
 
@@ -177,7 +177,7 @@ default-keyring=keyring.backends.kwallet.DBusKeyring
 
 See also issue [#1321](https://github.com/bit-team/backintime/issues/1321)
 
-#### Incompatibility with rsync 3.2.4 or newer
+### Incompatibility with rsync 3.2.4 or newer
 
 **Status: Fixed in v1.3.3**
 
@@ -192,7 +192,7 @@ Note that some GNU/Linux distributions (e.g. Manjaro) using a workaround with
 environment variable `RSYNC_OLD_ARGS` in their distro-specific packages for
 _Back In Time_. In that case you may not see any problems.
 
-#### Python 3.10 compatibility and Ubuntu version
+### Python 3.10 compatibility and Ubuntu version
 
 _Back In Time_ versions older than 1.3.2 do not start with Python >= 3.10.
 Ubuntu 22.04 LTS ships with Python 3.10 and backintime 1.2.1, but has applied
@@ -200,4 +200,8 @@ Ubuntu 22.04 LTS ships with Python 3.10 and backintime 1.2.1, but has applied
 to make it work. If you want to update _Back In Time_, you may use one of the
 [alternative options for installation](#alternative-installation-options).
 
-<sub>March 2024</sub>
+# Contributing and other ways to support the project
+See [CONTRIBUTING](CONTRIBUTING.md) file for an overview about the projects
+workflow and strategy.
+
+<sub>May 2024</sub>

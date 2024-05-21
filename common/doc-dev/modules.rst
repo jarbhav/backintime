@@ -12,9 +12,9 @@ common
    config
    configfile
    diagnostics
-   driveinfo
    encfstools
    exceptions
+   flock
    guiapplicationinstance
    logger
    mount
