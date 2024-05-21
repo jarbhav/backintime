@@ -1803,14 +1803,16 @@ def writeCrontab(lines):
                                 stderr = subprocess.PIPE,
                                 universal_newlines = True)
         out, err = proc.communicate()
+
     if proc.returncode or err:
-        logger.error('Failed to write lines to crontab: %s, %s'
-                     %(proc.returncode, err))
+        logger.error(
+            f'Failed to write lines to crontab: {proc.returncode}, {err}')
         return False
+
     else:
-        logger.debug('Wrote %s lines to user crontab'
-                     %len(lines))
+        logger.debug(f'Wrote {len(lines)} lines to user crontab')
         return True
+
 
 def splitCommands(cmds, head = '', tail = '', maxLength = 0):
     """
@@ -1840,24 +1842,29 @@ def splitCommands(cmds, head = '', tail = '', maxLength = 0):
         s += tail
         yield s
 
+
 def escapeIPv6Address(address):
     """Escape IP addresses with square brackets ``[]`` if they are IPv6.
 
-    If IPv4 nothing is changed.
+    If it is an IPv4 address or a hostname (lettersonly) nothing is changed.
 
     Args:
         address (str): IP-Address to escape if needed.
 
     Returns:
         str: The address, escaped if it is IPv6.
-
-    Raises:
-        ValueError: If address is not a valid IPv4 or IPv6.
     """
-    ip = ipaddress.ip_address(address)
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        # invalid IP, e.g. a hostname
+        return address
+
     if ip.version == 6:
-        return '[{}]'.format(address)
+        return f'[{address}]'
+
     return address
+
 
 def camelCase(s):
     """

@@ -25,7 +25,6 @@ import stat
 import signal
 import unittest
 from unittest.mock import patch
-import uuid
 from copy import deepcopy
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from datetime import datetime
@@ -35,7 +34,6 @@ import pyfakefs.fake_filesystem_unittest as pyfakefs_ut
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 import tools
-import config
 import configfile
 
 # chroot jails used for building may have no UUID devices (because of tmpfs)
@@ -520,40 +518,53 @@ class TestTools(generic.TestCase):
             ret[0],
             'echo start;echo foo;echo foo;echo foo;echo end')
 
-    def test_escapeIPv6Address_escaped(self):
-        self.assertEqual(tools.escapeIPv6Address('fd00:0::5'), '[fd00:0::5]')
-        self.assertEqual(
-            tools.escapeIPv6Address('2001:db8:0:8d3:0:8a2e:70:7344'),
-            '[2001:db8:0:8d3:0:8a2e:70:7344]')
-        self.assertEqual(tools.escapeIPv6Address('::'), '[::]')
-        self.assertEqual(tools.escapeIPv6Address('::1'), '[::1]')
-        self.assertEqual(tools.escapeIPv6Address('::ffff:192.0.2.128'), '[::ffff:192.0.2.128]')
-        self.assertEqual(tools.escapeIPv6Address('fe80::1'), '[fe80::1]')
 
-    def test_escapeIPv6Address_passed(self):
-        self.assertEqual(tools.escapeIPv6Address('192.168.1.1'), '192.168.1.1')
-        self.assertEqual(tools.escapeIPv6Address('172.17.1.133'), '172.17.1.133')
-        self.assertEqual(tools.escapeIPv6Address('255.255.255.255'), '255.255.255.255')
-        self.assertEqual(tools.escapeIPv6Address('169.254.0.1'), '169.254.0.1')
+class TestEscapeIPv6(generic.TestCase):
+    def test_escaped(self):
+        values_and_expected = (
+            ('fd00:0::5', '[fd00:0::5]'),
+            (
+                '2001:db8:0:8d3:0:8a2e:70:7344',
+                '[2001:db8:0:8d3:0:8a2e:70:7344]'
+            ),
+            ('::', '[::]'),
+            ('::1', '[::1]'),
+            ('::ffff:192.0.2.128', '[::ffff:192.0.2.128]'),
+            ('fe80::1', '[fe80::1]'),
+        )
 
-    def test_escapeIPv6Address_valueError(self):
-        with self.assertRaises(ValueError):
-            tools.escapeIPv6Address('foo.bar')
+        for val, exp in values_and_expected:
+            with self.subTest(val=val, exp=exp):
+                self.assertEqual(tools.escapeIPv6Address(val), exp)
 
-        with self.assertRaises(ValueError):
-            tools.escapeIPv6Address('fd00')
-        
-        with self.assertRaises(ValueError):
-            tools.escapeIPv6Address('2001:0db8:::0000:0000:8a2e:0370:7334')
+    def test_passed(self):
+        test_values = (
+            '192.168.1.1',
+            '172.17.1.133',
+            '255.255.255.255',
+            '169.254.0.1',
+        )
 
-        with self.assertRaises(ValueError):
-            tools.escapeIPv6Address(':2001:0db8:85a3:0000:0000:8a2e:0370:7334')
+        for val in test_values:
+            with self.subTest(val=val):
+                # IPv4 addresses are not escaped
+                self.assertEqual(tools.escapeIPv6Address(val), val)
 
-        with self.assertRaises(ValueError):
-            tools.escapeIPv6Address('2001:0gb8:85a3:0000:0000:8a2e:0370:7334')
+    def test_invalid(self):
+        """Invalid IP addresses and hostnames"""
+        test_values = (
+            'foo.bar',
+            'fd00',
+            '2001:0db8:::0000:0000:8a2e:0370:7334',
+            ':2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+            '2001:0gb8:85a3:0000:0000:8a2e:0370:7334',
+            '2001:0db8:85a3:0000:0000:8a2e:0370:7334:abcd',
+            'localhost',
+        )
 
-        with self.assertRaises(ValueError):
-            tools.escapeIPv6Address('2001:0db8:85a3:0000:0000:8a2e:0370:7334:abcd')
+        for val in test_values:
+            with self.subTest(val=val):
+                self.assertEqual(tools.escapeIPv6Address(val), val)
 
 
 class TestToolsEnviron(generic.TestCase):
